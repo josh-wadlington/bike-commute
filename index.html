@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8 />
+	<title>Leaflet Lab 07 Template</title>
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: "Noto Sans", sans-serif;
+			color: #3d3d3d;
+		}
+
+		h1 {
+			position: absolute;
+			margin-top: 0;
+			top: 10px;
+			left: 15px;
+			font-size: 2em;
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+			padding: 10px 15px;
+			background: rgba(256, 256, 256, .4);
+			border: 1px solid grey;
+			border-radius: 3px;
+			z-index: 800;
+		}
+
+		h2 {
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		#about {
+			position: absolute;
+			bottom: 20px;
+			left: 15px;
+			width: 280px;
+			padding: 0 15px;
+			background: rgba(256, 256, 256, .4);
+			border: 1px solid grey;
+			border-radius: 3px;
+			z-index: 800;
+		}
+
+		p {
+			font-size: .9em;
+			line-height: 1.5em;
+		}
+
+		a {
+			color: #005daa;
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>The Daily Commute</h1>
+
+	<div id='map'></div>
+
+	<section id="about">
+		<h2>Oak Hill to Sterling Bike Route</h2>
+		<p>This map shows a bicycle commute route and likely stops along the route. Another possible route can be found  <a href="https://www.strava.com/activities/594910819">here on Strava</a>. When parched from vigorous cycling a stop to get some organic coconut water might be necessary. In addition, a stop at the farm park to pet sheep can provide a much needed boost of oxytocin. </p>
+		<p>Map authored by Josh Wadlington</p>
+	</section>
+
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+
+	<script src="data/route.js"></script>
+
+	<script>
+
+		var options = {
+			center: [38.961701, -77.398969],
+			zoom: 12,
+			zoomControl: false
+		}
+
+		var map = L.map('map', options);
+
+		L.control.zoom({
+			position: 'topright'
+		}).addTo(map);
+
+		var tiles = L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		}).addTo(map);
+
+		var myRoute = L.geoJson(routeData, {
+
+		    filter : function(feature) {
+		        if(feature.geometry.type == "LineString") {
+		            return feature;
+		        }
+		    },
+		    style : function(feature) {
+
+		        return {
+		            color: "#005DAA",
+		            weight: 4,
+		            opacity: .6,
+		            dashArray: "5, 5"
+		        }
+		    }
+
+		}).addTo(map);
+
+		myRoute.on('mouseover', function() {
+				this.setStyle({
+						color: '#fc8d62'
+				});
+		});
+
+		myRoute.on('mouseout', function() {
+		    this.setStyle({
+						color: "#005DAA",
+				});
+		});
+
+		function clickZoom(e) {
+				map.setView(e.target.getLatLng(),16);
+		}
+
+		var myStops = L.geoJson(routeData, {
+
+		    filter : function(feature) {
+		        if(feature.geometry.type == "Point") {
+		            return feature;
+		        }
+		    },
+		    onEachFeature : function(feature, layer) {
+
+		        layer.bindTooltip(feature.properties.name).on('click', clickZoom);
+		    }
+
+		}).addTo(map);
+
+	</script>
+
+</body>
+
+</html>
